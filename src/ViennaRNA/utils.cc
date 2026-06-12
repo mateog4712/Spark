@@ -39,6 +39,13 @@ static struct {
 
 /*
  #################################
+ # PRIVATE FUNCTION DECLARATIONS #
+ #################################
+ */
+static void log_v(vrna_log_event_t *event);
+
+/*
+ #################################
  # BEGIN OF FUNCTION DEFINITIONS #
  #################################
  */
@@ -204,5 +211,19 @@ unlock(void)
 } else {
   pthread_mutex_unlock(&(logger.mtx));
 }
+#endif
+}
+
+/* uniform random number generator; vrna_urn() is in [0,1] */
+/* uses a linear congruential library routine */
+/* 48 bit arithmetic */
+double vrna_urn(void){
+#ifdef HAVE_ERAND48
+  extern double erand48(unsigned short[]);
+
+
+  return erand48(xsubi);
+#else
+  return ((double)rand()) / RAND_MAX;
 #endif
 }

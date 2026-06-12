@@ -24,6 +24,7 @@ set(vienna_SOURCE
     src/ViennaRNA/params/params.cc
     src/ViennaRNA/params/io.cc
     src/ViennaRNA/model.cc 
+    src/ViennaRNA/utils.cc
 )
 
 add_library(RNA STATIC ${vienna_SOURCE})

@@ -9,7 +9,7 @@
 
 /**                                External                                       */
 
-int E_ExtLoop(int type, int si1, int sj1, vrna_param_t *P){
+inline int E_ExtLoop(int type, int si1, int sj1, vrna_param_t *P){
   int energy = 0;
 
   if (si1 >= 0 && sj1 >= 0)
@@ -25,7 +25,7 @@ int E_ExtLoop(int type, int si1, int sj1, vrna_param_t *P){
   return energy;
 }
 
-double exp_E_ExtLoop(unsigned int type, int n5d, int n3d, vrna_exp_param_t *p){
+inline double exp_E_ExtLoop(unsigned int type, int n5d, int n3d, vrna_exp_param_t *p){
   double energy = 1.0;
 
   if (n5d >= 0 && n3d >= 0)

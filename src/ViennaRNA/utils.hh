@@ -208,3 +208,12 @@ vrna_log(vrna_log_levels_e  level,
 typedef void (*vrna_log_cb_f)(vrna_log_event_t  *event,
                               void              *log_data);
 #endif
+
+/**
+ *  @brief get a random number from [0..1]
+ *
+ *  @see  vrna_int_urn(), vrna_init_rand()
+ *  @note Usually implemented by calling @e erand48().
+ *  @return   A random number in range [0..1]
+ */
+double vrna_urn(void);
