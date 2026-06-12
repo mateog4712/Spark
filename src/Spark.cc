@@ -15,6 +15,9 @@
 #include "matrix.hh"
 #include "sparse_tree.cc"
 #include "trace_arrow.hh"
+#include "ViennaRNA/loops.hh"
+#include "ViennaRNA/pair_mat.hh"
+#include "ViennaRNA/params/io.h"
 #include <cassert>
 #include <cstring>
 #include <fstream>
@@ -26,11 +29,11 @@
 #include <sys/stat.h>
 #include <vector>
 
-extern "C" {
-#include "ViennaRNA/loops/all.h"
-#include "ViennaRNA/pair_mat.h"
-#include "ViennaRNA/params/io.h"
-}
+// // extern "C" {
+// #include "ViennaRNA/loops/all.h"
+// #include "ViennaRNA/pair_mat.h"
+// #include "ViennaRNA/params/io.h"
+// }
 static bool pseudoknot = false;
 
 static bool pk_only = false;
@@ -64,7 +67,7 @@ typedef std::vector<cand_entry_td1> cand_list_td1;
 
 class Spark;
 
-energy_t ILoopE(const short *S, const short *S1, const paramT *params, const pair_type &ptype_closing, const cand_pos_t &i, const cand_pos_t &j,
+energy_t ILoopE(const short *S, const short *S1, const vrna_param_t *params, const pair_type &ptype_closing, const cand_pos_t &i, const cand_pos_t &j,
                 const cand_pos_t &k, const cand_pos_t &l);
 
 /**
@@ -142,7 +145,7 @@ class Spark {
     } cand_comp;
 
     Spark(const std::string &seq, bool garbage_collect, std::string restricted)
-        : seq_(seq), n_(seq.length()), params_(scale_parameters()), garbage_collect_(garbage_collect), ta_(n_), taVP_(n_) {
+        : seq_(seq), n_(seq.length()), params_(vrna_params(NULL)), garbage_collect_(garbage_collect), ta_(n_), taVP_(n_) {
         make_pair_matrix();
 
         S_ = encode_sequence(seq.c_str(), 0);
@@ -234,20 +237,20 @@ void rotate_arrays(Spark &spark) {
  * @param i The left index in the base pair
  * @param j The right index in the base pair
  */
-energy_t HairpinE(const std::string &seq, const short *S, const short *S1, const paramT *params, cand_pos_t i, cand_pos_t j) {
+energy_t HairpinE(const std::string &seq, const short *S, const short *S1, const vrna_param_t *params, cand_pos_t i, cand_pos_t j) {
 
     const pair_type ptype_closing = pair[S[i]][S[j]];
 
     if (ptype_closing == 0) return INF;
 
-    return E_Hairpin(j - i - 1, ptype_closing, S1[i + 1], S1[j - 1], &seq.c_str()[i - 1], const_cast<paramT *>(params));
+    return E_Hairpin(j - i - 1, ptype_closing, S1[i + 1], S1[j - 1], &seq.c_str()[i - 1], const_cast<vrna_param_t *>(params));
 }
 
 /**
  * @brief Returns the internal loop energy for a given i.j and k.l
  *
  */
-energy_t ILoopE(const short *S, const short *S1, const paramT *params, const pair_type &ptype_closing, const cand_pos_t &i, const cand_pos_t &j,
+energy_t ILoopE(const short *S, const short *S1, const vrna_param_t *params, const pair_type &ptype_closing, const cand_pos_t &i, const cand_pos_t &j,
                 const cand_pos_t &k, const cand_pos_t &l) {
     assert(ptype_closing > 0);
     assert(1 <= i);
@@ -260,7 +263,7 @@ energy_t ILoopE(const short *S, const short *S1, const paramT *params, const pai
 
     if (ptype_enclosed == 0) return INF;
 
-    return E_IntLoop(k - i - 1, j - l - 1, ptype_closing, ptype_enclosed, S1[i + 1], S1[j - 1], S1[k - 1], S1[l + 1], const_cast<paramT *>(params));
+    return E_IntLoop(k - i - 1, j - l - 1, ptype_closing, ptype_enclosed, S1[i + 1], S1[j - 1], S1[k - 1], S1[l + 1], const_cast<vrna_param_t *>(params));
 }
 
 /**
@@ -272,7 +275,7 @@ energy_t ILoopE(const short *S, const short *S1, const paramT *params, const pai
  * @param vij1 The V(i,j-1) energy
  * @param vi1j1 The V(i+1,j-1) energy
  */
-energy_t E_ext_Stem(const energy_t &vij, const energy_t &vi1j, const energy_t &vij1, const energy_t &vi1j1, const short *S, paramT *params,
+energy_t E_ext_Stem(const energy_t &vij, const energy_t &vi1j, const energy_t &vij1, const energy_t &vi1j1, const short *S, vrna_param_t *params,
                     const cand_pos_t i, const cand_pos_t j, Dangle &d, cand_pos_t n, const std::vector<Node> &tree) {
 
     energy_t e = INF, en = INF;
@@ -285,9 +288,9 @@ energy_t E_ext_Stem(const energy_t &vij, const energy_t &vi1j, const energy_t &v
             if (params->model_details.dangles == 2) {
                 base_type si1 = i > 1 ? S[i - 1] : -1;
                 base_type sj1 = j < n ? S[j + 1] : -1;
-                en += vrna_E_ext_stem(tt, si1, sj1, params);
+                en += E_ExtLoop(tt, si1, sj1, params);
             } else {
-                en += vrna_E_ext_stem(tt, -1, -1, params);
+                en += E_ExtLoop(tt, -1, -1, params);
                 d = 0;
             }
 
@@ -303,7 +306,7 @@ energy_t E_ext_Stem(const energy_t &vij, const energy_t &vi1j, const energy_t &v
             if (en != INF) {
 
                 base_type si1 = S[i];
-                en += vrna_E_ext_stem(tt, si1, -1, params);
+                en += E_ExtLoop(tt, si1, -1, params);
             }
 
             e = std::min(e, en);
@@ -318,7 +321,7 @@ energy_t E_ext_Stem(const energy_t &vij, const energy_t &vi1j, const energy_t &v
 
                 base_type sj1 = S[j];
 
-                en += vrna_E_ext_stem(tt, -1, sj1, params);
+                en += E_ExtLoop(tt, -1, sj1, params);
             }
             e = std::min(e, en);
             if (e == en) {
@@ -334,7 +337,7 @@ energy_t E_ext_Stem(const energy_t &vij, const energy_t &vi1j, const energy_t &v
                 base_type si1 = S[i];
                 base_type sj1 = S[j];
 
-                en += vrna_E_ext_stem(tt, si1, sj1, params);
+                en += E_ExtLoop(tt, si1, sj1, params);
             }
             e = std::min(e, en);
             if (e == en) {
@@ -351,7 +354,7 @@ energy_t E_ext_Stem(const energy_t &vij, const energy_t &vi1j, const energy_t &v
  * @param dmli1 Row of WM2 from one iteration ago
  * @param dmli2 Row of WM2 from two iterations ago
  */
-energy_t E_MbLoop(const std::vector<energy_t> &dmli1, const std::vector<energy_t> &dmli2, const short *S, paramT *params, cand_pos_t i, cand_pos_t j,
+energy_t E_MbLoop(const std::vector<energy_t> &dmli1, const std::vector<energy_t> &dmli2, const short *S, vrna_param_t *params, cand_pos_t i, cand_pos_t j,
                   const std::vector<Node> &tree) {
 
     energy_t e = INF, en = INF;
@@ -458,7 +461,7 @@ energy_t E_MbLoop(const std::vector<energy_t> &dmli1, const std::vector<energy_t
  * @param vij1 The V(i,j-1) energy
  * @param vi1j1 The V(i+1,j-1) energy
  */
-energy_t E_MLStem(const energy_t &vij, const energy_t &vi1j, const energy_t &vij1, const energy_t &vi1j1, const short *S, paramT *params,
+energy_t E_MLStem(const energy_t &vij, const energy_t &vi1j, const energy_t &vij1, const energy_t &vi1j1, const short *S, vrna_param_t *params,
                   cand_pos_t i, cand_pos_t j, Dangle &d, const cand_pos_t &n, const std::vector<Node> &tree) {
 
     energy_t e = INF, en = INF;
@@ -947,7 +950,7 @@ void compute_WMB_case1(cand_pos_t j, energy_t &m1, energy_t &BE_en, cand_pos_t &
  * @param WM2ij1 The WM2 energy for the region [i,j-1]
  * @param WM2i1j1 The WM2 energy for the region [i+1,j-1]
  */
-void find_mb_dangle(const energy_t WM2ij, const energy_t WM2i1j, const energy_t WM2ij1, const energy_t WM2i1j1, paramT *params, const short *S,
+void find_mb_dangle(const energy_t WM2ij, const energy_t WM2i1j, const energy_t WM2ij1, const energy_t WM2i1j1, vrna_param_t *params, const short *S,
                     const cand_pos_t i, const cand_pos_t j, cand_pos_t &k, cand_pos_t &l, const std::vector<Node> &tree) {
 
     const pair_type tt = pair[S[j]][S[i]];
@@ -1100,7 +1103,7 @@ void trace_V(Spark &spark, const bool &mark_candidates, cand_pos_t i, cand_pos_t
                 if (e
                     == it->second
                            + E_IntLoop(k - i - 1, j - l - 1, ptype_closing, rtype[pair[spark.S_[k]][spark.S_[l]]], spark.S1_[i + 1], spark.S1_[j - 1],
-                                       spark.S1_[k - 1], spark.S1_[l + 1], const_cast<paramT *>(spark.params_))) {
+                                       spark.S1_[k - 1], spark.S1_[l + 1], const_cast<vrna_param_t *>(spark.params_))) {
                     trace_V(spark, mark_candidates, k, l, it->second, tree);
                     return;
                 }
@@ -1428,7 +1431,7 @@ void trace_VP(Spark &spark, const bool &mark_candidates, cand_pos_t i, cand_pos_
                 if (k - i > 31) continue;
                 energy_t temp = lrint(((j - l == 1 && k - i == 1) ? e_stP_penalty : e_intP_penalty)
                                       * E_IntLoop(k - i - 1, j - l - 1, ptype_closing, rtype[pair[spark.S_[k]][spark.S_[l]]], spark.S1_[i + 1],
-                                                  spark.S1_[j - 1], spark.S1_[k - 1], spark.S1_[l + 1], const_cast<paramT *>(spark.params_)));
+                                                  spark.S1_[j - 1], spark.S1_[k - 1], spark.S1_[l + 1], const_cast<vrna_param_t *>(spark.params_)));
                 if (e == it->second + temp) {
                     trace_VP(spark, mark_candidates, k, l, it->second, tree);
                     return;
@@ -2187,7 +2190,7 @@ energy_t compute_WMB(cand_pos_t i, cand_pos_t j, Spark &spark, sparse_tree &tree
  */
 energy_t compute_VP_internal(cand_pos_t i, cand_pos_t j, cand_pos_t b_ij, cand_pos_t bp_ij, cand_pos_t Bp_ij, cand_pos_t B_ij, cand_pos_t &best_k,
                              cand_pos_t &best_l, energy_t &best_e, sparse_tree &sparse_tree, short *S, short *S1, LocARNA::Matrix<energy_t> &VP,
-                             paramT *params) {
+                             vrna_param_t *params) {
 
     energy_t m5 = INF;
     // By doing uint, we make sure it can't be negative
@@ -2211,7 +2214,7 @@ energy_t compute_VP_internal(cand_pos_t i, cand_pos_t j, cand_pos_t b_ij, cand_p
             v_iloop_kl = v_iloop_kl + VP(k_mod, l)
                          + lrint(e_intP_penalty
                                  * E_IntLoop(k - i - 1, j - l - 1, ptype_closing, rtype[pair[S[k]][S[l]]], S1[i + 1], S1[j - 1], S1[k - 1], S1[l + 1],
-                                             const_cast<paramT *>(params)));
+                                             const_cast<vrna_param_t *>(params)));
 
             if (v_iloop_kl < m5) {
                 m5 = v_iloop_kl;
@@ -2304,7 +2307,7 @@ energy_t compute_VP(cand_pos_t i, cand_pos_t j, cand_pos_t b_ij, cand_pos_t bp_i
  * @param j column index
  */
 energy_t compute_internal(cand_pos_t i, cand_pos_t j, cand_pos_t &best_k, cand_pos_t &best_l, energy_t &best_e, sparse_tree &sparse_tree, short *S,
-                          short *S1, LocARNA::Matrix<energy_t> &V, paramT *params) {
+                          short *S1, LocARNA::Matrix<energy_t> &V, vrna_param_t *params) {
     energy_t v_iloop = INF;
     cand_pos_t max_k = std::min(j - TURN - 2, i + MAXLOOP + 1);
     const pair_type ptype_closing = pair[S[i]][S[j]];
@@ -2321,7 +2324,7 @@ energy_t compute_internal(cand_pos_t i, cand_pos_t j, cand_pos_t &best_k, cand_p
 
             v_iloop_kl = v_iloop_kl + V(k_mod, l)
                          + E_IntLoop(k - i - 1, j - l - 1, ptype_closing, rtype[pair[S[k]][S[l]]], S1[i + 1], S1[j - 1], S1[k - 1], S1[l + 1],
-                                     const_cast<paramT *>(params));
+                                     const_cast<vrna_param_t *>(params));
             if (v_iloop_kl < v_iloop) {
                 v_iloop = v_iloop_kl;
                 best_l = l;
@@ -2782,6 +2785,7 @@ void validate_structure(std::string &seq, std::string &structure) {
                 } else if (seq[i] == 'C' && seq[j] == 'G') {
                 } else if ((seq[i] == 'G' && seq[j] == 'C') || (seq[i] == 'G' && seq[j] == 'U')) {
                 } else if ((seq[i] == 'U' && seq[j] == 'G') || (seq[i] == 'U' && seq[j] == 'A')) {
+                } else if ((seq[i] == 'A' && seq[j] == 'T') || (seq[i] == 'T' && seq[j] == 'A')) {
                 } else {
                     std::cout << "Incorrect input: " << seq[i] << " does not pair with " << seq[j] << std::endl;
                     exit(0);
@@ -2839,11 +2843,9 @@ int main(int argc, char **argv) {
         if (!args_info.input_file_given) std::getline(std::cin, seq);
     }
 
-    std::string restricted = "";
-    if (args_info.input_structure_given) restricted = input_structure;
+    std::string restricted = args_info.input_structure_given ? args_info.input_structure_arg: "";
 
-    std::string fileI;
-    args_info.input_file_given ? fileI = input_file : fileI = "";
+    std::string fileI = args_info.input_file_given ? args_info.input_file_arg : "";
 
     if (fileI != "") {
 
@@ -2856,7 +2858,7 @@ int main(int argc, char **argv) {
     }
     cand_pos_t n = seq.length();
     std::transform(seq.begin(), seq.end(), seq.begin(), ::toupper);
-    if (!args_info.noConv_given) seqtoRNA(seq);
+    if (args_info.noConv_flag) seqtoRNA(seq);
     if (restricted == "") restricted = std::string(n, '.');
 
     if (restricted.length() != (cand_pos_tu)n) {
@@ -2866,29 +2868,39 @@ int main(int argc, char **argv) {
         exit(0);
     }
 
-    std::string file = args_info.paramFile_given ? parameter_file : "params/rna_DirksPierce09.par";
-    if (exists(file)) {
-        vrna_params_load(file.c_str(), VRNA_PARAMETER_FORMAT_DEFAULT);
-    } else if (seq.find('T') != std::string::npos) {
-        vrna_params_load_DNA_Mathews2004();
+    if(args_info.paramFile_given){
+        std::string file = args_info.paramFile_arg;
+        if (exists(file)) vrna_params_load(file.c_str(), VRNA_PARAMETER_FORMAT_DEFAULT);
+        else{
+            std::cerr << "Not a valid parameter file!" << std::endl;
+            exit(EXIT_FAILURE);
+        }
+    } else {
+        if (seq.find('T') != std::string::npos) {
+            vrna_params_load_DNA_Mathews2004();
+        } else{
+            std::string file = "params/rna_DirksPierce09.par";
+            if (exists(file)) vrna_params_load(file.c_str(), VRNA_PARAMETER_FORMAT_DEFAULT);
+            else{
+                std::cerr << "Not a valid parameter file!" << std::endl;
+                exit(EXIT_FAILURE);
+            }
+        }
     }
-    bool verbose;
-    verbose = args_info.verbose_given;
+    bool verbose = args_info.verbose_flag;
 
-    bool mark_candidates;
-    mark_candidates = args_info.mark_candidates_given;
+    bool mark_candidates = args_info.mark_candidates_given;
 
     noGU = args_info.noGU_given;
-    seqtoRNA(seq);
     validate_structure(seq, restricted);
 
     sparse_tree tree(restricted, n);
 
     Spark spark(seq, !args_info.noGC_given, restricted);
 
-    if (args_info.dangles_given) spark.params_->model_details.dangles = dangle_model;
-    pseudoknot = !args_info.pseudoknot_free_given;
-    pk_only = args_info.pk_only_given;
+    if (args_info.dangles_given) spark.params_->model_details.dangles = args_info.dangles_arg;
+    pseudoknot = !args_info.pk_free_flag;
+    pk_only = args_info.pk_only_flag;
 
     cmdline_parser_free(&args_info);
 

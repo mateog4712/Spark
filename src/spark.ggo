@@ -1,0 +1,57 @@
+package "Spark"
+version "1.0"
+args "--unamed-opts=input"
+
+purpose "Time- and space-efficient sparsified minimum free energy folding of possibly-pseudoknotted RNAs"
+
+usage "Spark [options] [sequence]"
+
+description  "Read RNA sequence from stdin or cmdline; predict minimum\nfree energy and optimum structure using the time- and space-efficient\nMFE RNA folding algorithm. The results are equivalent\nto HFold, but the computation takes less time and much less space."
+
+# Options
+
+option "input-structure" r
+    "Give a restricted structure as an input structure"
+    string optional
+
+option "input-file" i
+    "Give a path to an input file containing the sequence (and input structure if known)"
+    string optional
+
+option "pk-free" p
+    "Specify whether you only want the pseudoknot-free structure to be calculated"
+    flag off
+
+option "pk-only" k
+    "Only add base pairs which cross the constraint structure. The constraint structure is returned if there are no energetically favorable crossing base pairs"
+    flag off
+
+option "mark-candidates" m
+    "Represent candidate base pairs by curly brackets"
+    flag off
+
+option "verbose" v
+    "Turn on verbose output"
+    flag off
+
+option "dangles" d
+    "Specify the dangle model to be used (base is 2)"
+    int default="2" optional
+
+option "paramFile" P
+    "Read energy parameters from paramfile, instead of using the default parameter set."
+    string optional
+
+option "noConv" -
+    "Do not convert DNA into RNA. This will use the Matthews 2004 parameters for DNA"
+    flag on
+
+option "noGU" -
+    "Turn off G-U and U-G (and G-T and T-G) base pairing"
+    flag off
+
+option "noGC" -
+    "Turn off garbage collection and related overhead"
+    flag off
+
+text "\nThe input sequence is read from standard input, unless it is\ngiven on the command line.\n"

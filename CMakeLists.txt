@@ -12,7 +12,6 @@ endif()
 set(CMAKE_CXX_FLAGS "-Wall -Wextra")
 set(CMAKE_CXX_FLAGS_DEBUG "-g")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -march=native")
-set(CMAKE_C_FLAGS_RELEASE "-O3")
 
 set(spark_SOURCE
     src/cmdline.cc
@@ -20,70 +19,11 @@ set(spark_SOURCE
     src/Spark.cc
     src/trace_arrow.cc 
 )
-
-set(constraints_SOURCE
-    src/ViennaRNA/constraints/constraints.c
-    src/ViennaRNA/constraints/hard.c
-    src/ViennaRNA/constraints/SHAPE.c
-    src/ViennaRNA/constraints/soft.c
-) 
-set(datastructures_SOURCE
-    src/ViennaRNA/datastructures/basic_datastructures.c
-    src/ViennaRNA/datastructures/char_stream.c
-    src/ViennaRNA/datastructures/lists.c
-)
-set(io_SOURCE
-    src/ViennaRNA/io/file_formats.c
-    src/ViennaRNA/io/io_utils.c
-)
-set(landscape_SOURCE
-    src/ViennaRNA/landscape/move.c
-)
-set(loops_SOURCE
-    src/ViennaRNA/loops/external_pf.c
-    src/ViennaRNA/loops/external.c
-    src/ViennaRNA/loops/hairpin.c
-    src/ViennaRNA/loops/internal.c
-    src/ViennaRNA/loops/multibranch.c
-)
-set(params_SOURCE
-    src/ViennaRNA/params/default.c
-    src/ViennaRNA/params/params.c
-    src/ViennaRNA/params/io.c
-)
-set(utils_SOURCE
-    src/ViennaRNA/utils/cpu.c
-    src/ViennaRNA/utils/higher_order_functions.c
-    src/ViennaRNA/utils/string_utils.c
-    src/ViennaRNA/utils/structure_utils.c
-    src/ViennaRNA/utils/utils.c
-)
 set(vienna_SOURCE
-    ${constraints_SOURCE} ${datastructures_SOURCE}
-    ${io_SOURCE} ${landscape_SOURCE}
-    ${loops_SOURCE} ${params_SOURCE}
-    ${utils_SOURCE}
-    src/ViennaRNA/alphabet.c
-    src/ViennaRNA/boltzmann_sampling.c
-    src/ViennaRNA/centroid.c
-    src/ViennaRNA/cofold.c
-    src/ViennaRNA/commands.c
-    src/ViennaRNA/dp_matrices.c
-    src/ViennaRNA/equilibrium_probs.c
-    src/ViennaRNA/eval.c
-    src/ViennaRNA/fold_compound.c
-    src/ViennaRNA/fold.c
-    src/ViennaRNA/gquad.c
-    src/ViennaRNA/grammar.c
-    src/ViennaRNA/MEA.c
-    src/ViennaRNA/mfe.c
-    src/ViennaRNA/mm.c
-    src/ViennaRNA/model.c
-    src/ViennaRNA/part_func.c
-    src/ViennaRNA/ribo.c
-    src/ViennaRNA/sequence.c
-    src/ViennaRNA/subopt.c
-    src/ViennaRNA/unstructured_domains.c  
+    src/ViennaRNA/params/default.cc
+    src/ViennaRNA/params/params.cc
+    src/ViennaRNA/params/io.cc
+    src/ViennaRNA/model.cc 
 )
 
 add_library(RNA STATIC ${vienna_SOURCE})
