@@ -44,8 +44,6 @@
      Biochemistry 1991, 30, 6428--6435
 */
 
-#include "ViennaRNA/params/default.h"
-
 #define NST 0     /* Energy for nonstandard stacked pairs */
 #define DEF -50   /* Default terminal mismatch, used for I */
                   /* and any non_pairing bases */

@@ -17,7 +17,7 @@
 #include "trace_arrow.hh"
 #include "ViennaRNA/loops.hh"
 #include "ViennaRNA/pair_mat.hh"
-#include "ViennaRNA/params/io.h"
+#include "ViennaRNA/params/io.hh"
 #include <cassert>
 #include <cstring>
 #include <fstream>

@@ -1,6 +1,6 @@
 #include "ViennaRNA/params/io.hh"
-#include "ViennaRNA/params/constants.h"
-#include "ViennaRNA/params/default.h"
+#include "ViennaRNA/constants.hh"
+#include "ViennaRNA/params/default.hh"
 #include "ViennaRNA/utils.hh"
 
 #include <algorithm>
