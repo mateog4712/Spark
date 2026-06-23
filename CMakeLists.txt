@@ -4,6 +4,8 @@ project(Spark)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Directory for parameters
+set(PARAMS_DIR "${CMAKE_SOURCE_DIR}/params")  # or CMAKE_INSTALL_PREFIX based path
 
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
@@ -34,5 +36,10 @@ target_include_directories(RNA PRIVATE .)
 add_executable(Spark ${spark_SOURCE})
 
 target_link_libraries(Spark PRIVATE RNA)
+
+# Pass it as a compile definition
+target_compile_definitions(Spark PRIVATE 
+    PARAMS_DIR="${PARAMS_DIR}"
+)
 
 include_directories(src)
