@@ -21,7 +21,7 @@ If it does not print a cmake version greater than or equal to 3.1, you will have
 [Linux instructions source](https://geeksww.com/tutorials/operating_systems/linux/installation/downloading_compiling_and_installing_cmake_on_linux.php)
 
 #### Steps for installation   
-1. [Download the repository](https://github.com/mateog4712/SparseRNAFolD.git) and extract the files onto your system.
+1. [Download the repository](https://github.com/mateog4712/Spark.git) and extract the files onto your system.
 2. From a command line in the root directory (where this README.md is) run
 ```
 cmake -H. -Bbuild
