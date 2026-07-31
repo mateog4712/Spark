@@ -20,10 +20,10 @@ static int        BP_pair[NBASES][NBASES] =
 
 #define MAXALPHA 20       /* maximal length of alphabet */
 
-static short  alias[MAXALPHA + 1];
-static int    pair[MAXALPHA + 1][MAXALPHA + 1];
+inline short  alias[MAXALPHA + 1];
+inline int    pair[MAXALPHA + 1][MAXALPHA + 1];
 /* rtype[pair[i][j]]:=pair[j][i] */
-static int    rtype[8] = {
+inline int    rtype[8] = {
   0, 2, 1, 4, 3, 6, 5, 7
 };
 
