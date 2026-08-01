@@ -19,7 +19,8 @@ set(spark_SOURCE
     src/cmdline.cc
     src/sparse_tree.cc
     src/Spark.cc
-    src/trace_arrow.cc 
+    src/trace_arrow.cc
+    src/main.cc 
 )
 set(vienna_SOURCE
     src/ViennaRNA/params/default.cc
