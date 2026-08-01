@@ -164,6 +164,40 @@ energy_t Spark::ILoopE(const pair_type &ptype_closing, const cand_pos_t &i, cons
     return E_IntLoop(k - i - 1, j - l - 1, ptype_closing, ptype_enclosed, S1_[i + 1], S1_[j - 1], S1_[k - 1], S1_[l + 1], const_cast<vrna_param_t *>(params_));
 }
 
+
+// /**
+//  * @brief Gives the W(i,j) energy. The type of dangle model being used affects this energy. 
+//  * The type of dangle is also changed to reflect this.
+//  * 
+// */
+// energy_t Spark::E_ext_Stem(const energy_t& vij,const energy_t& vi1j,const energy_t& vij1,const energy_t& vi1j1, const cand_pos_t i,const cand_pos_t j, Dangle &d){
+
+// 	energy_t e = INF;
+
+//     auto consider = [&](energy_t v, bool valid, pair_type tt, base_type s5, base_type s3, Dangle &d, int d_type) {
+//         if (!valid || v == INF) return;
+//         if(v + E_ExtLoop(tt, s5, s3, params_) < e){
+//             e = v + E_ExtLoop(tt, s5, s3, params_);
+//             d = d_type;
+//         }
+//         e = std::min(e, v + E_ExtLoop(tt, s5, s3, params_));
+//     };
+// 	base_type si1  = i > 1 ? S_[i-1] : -1;
+//     base_type sj1  = j < n_ ? S_[j+1] : -1;
+//     base_type si = S_[i];
+//     base_type sj = S_[j];
+
+// 	bool dangle2 = params_->model_details.dangles == 2;
+//     bool dangle1 = params_->model_details.dangles == 1;
+
+// 	consider(vij, ((tree->tree[i].pair < -1 && tree->tree[j].pair < -1) || (tree->tree[i].pair == j && tree->tree[j].pair == i)), pair[S_[i]][S_[j]], dangle2 ? si1 : -1, dangle2 ? sj1 : -1,d,0);
+// 	if (dangle1) {
+//         consider(vi1j,j-i-1>TURN && (((tree->tree[i + 1].pair < -1 && tree->tree[j].pair < -1) || (tree->tree[i + 1].pair == j)) && tree->tree[i].pair < 0), pair[S_[i+1]][S_[j]], si, -1,d,1);
+//         consider(vij1,j-1-i>TURN && (((tree->tree[i].pair < -1 && tree->tree[j - 1].pair < -1) || (tree->tree[i].pair == j - 1)) && tree->tree[j].pair < 0), pair[S_[i]][S_[j-1]], -1, sj,d,2);
+//         consider(vi1j1,j-1-i-1>TURN && (((tree->tree[i + 1].pair < -1 && tree->tree[j - 1].pair < -1) || (tree->tree[i + 1].pair == j - 1)) &&tree-> tree[i].pair < 0 && tree->tree[j].pair < 0), pair[S_[i+1]][S_[j-1]], si, sj,d,3);
+//     }
+// 	return e;
+// }
 /**
  * @brief Gives the W(i,j) energy. The type of dangle model being used affects this energy.
  * The type of dangle is also changed to reflect this.
@@ -245,6 +279,7 @@ energy_t E_ext_Stem(const energy_t &vij, const energy_t &vi1j, const energy_t &v
     }
     return e;
 }
+
 
 /**
  * @brief Computes the multiloop V contribution. This gives back essentially VM(i,j).
@@ -350,6 +385,37 @@ energy_t E_MbLoop(const std::vector<energy_t> &dmli1, const std::vector<energy_t
 
     return e;
 }
+// /**
+// * @brief Computes the multiloop V contribution. This gives back essentially VM(i,j).
+// * 
+// */
+// energy_t Spark::E_MbLoop(const std::vector<energy_t> &dmli1, const std::vector<energy_t> &dmli2, cand_pos_t i, cand_pos_t j){
+// 	energy_t e = INF;
+
+//     bool pairable = (tree->tree[i].pair < -1 && tree->tree[j].pair < -1) || (tree->tree[i].pair == j);
+//     pair_type tt = pair[S_[j]][S_[i]];
+//     base_type si1 = S_[i+1];
+//     base_type sj1 = S_[j-1];
+
+// 	auto consider = [&](energy_t v, bool check, base_type s5, base_type s3, int ml_count) {
+//         if (check && v == INF) return;
+//         e = std::min(e, v + E_MLstem(tt, s5, s3, params_) + params_->MLclosing + ml_count * params_->MLbase);
+//     };
+
+// 	bool dangle2 = params_->model_details.dangles == 2;
+//     bool dangle1 = params_->model_details.dangles == 1;
+
+// 	consider(dmli1[j-1],pairable, dangle2 ? sj1 : -1, dangle2 ? si1 : -1, 0);
+// 	if(dangle1){
+// 		// ML pair 5 — closing (i,j) with mb part [i+2, j-1]
+// 		consider(dmli2[j-1],pairable && tree->tree[i+1].pair < 0, -1, si1, 1);
+//         // ML pair 3 — closing (i,j) with mb part [i+1, j-2]
+//         consider(dmli1[j-2],pairable && tree->tree[j-1].pair < 0, sj1, -1, 1);
+//         // ML pair 53 — closing (i,j) with mb part [i+2, j-2]
+//         consider(dmli2[j-2],pairable && tree->tree[i+1].pair < 0 && tree->tree[j-1].pair < 0, sj1, si1, 2);
+// 	}
+// 	return e;
+// }
 /**
  * @brief Gives the WM(i,j) energy. The type of dangle model being used affects this energy.
  * The type of dangle is also changed to reflect this.
@@ -2290,7 +2356,7 @@ energy_t Spark::fold(){
                 if ((tree->tree[i].pair < -1 && tree->tree[j].pair < -1) || tree->tree[i].pair == j) {
                     v_iloop = compute_internal(i, j, best_k, best_l, best_e);
                 }
-                const energy_t v_split = E_MbLoop(dmli1_, dmli2_, S_, params_, i, j, tree->tree);
+                const energy_t v_split = E_MbLoop(dmli1_, dmli2_,S_,params_, i, j,tree->tree);
 
                 v = std::min(v_h, std::min(v_iloop, v_split));
                 // register required trace arrows from (i,j)

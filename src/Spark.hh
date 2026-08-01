@@ -146,6 +146,8 @@ class Spark {
     void find_mb_dangle(const energy_t WM2ij, const energy_t WM2i1j, const energy_t WM2ij1, const energy_t WM2i1j1, const cand_pos_t i, const cand_pos_t j, cand_pos_t k, cand_pos_t l);
     energy_t HairpinE(cand_pos_t i, cand_pos_t j);
     energy_t ILoopE(const pair_type &ptype_closing, const cand_pos_t &i, const cand_pos_t &j, const cand_pos_t &k, const cand_pos_t &l);
+    // energy_t E_MbLoop(const std::vector<energy_t> &dmli1, const std::vector<energy_t> &dmli2, cand_pos_t i, cand_pos_t j);
+    // energy_t E_ext_Stem(const energy_t& vij,const energy_t& vi1j,const energy_t& vij1,const energy_t& vi1j1, const cand_pos_t i,const cand_pos_t j, Dangle &d);
 
     /**
      * @brief Test existence of candidate. Used primarily for determining whether (i,j) is candidate for W/WM splits
