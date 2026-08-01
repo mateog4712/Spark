@@ -1,3 +1,6 @@
+#ifndef SPARK
+#define SPARK
+
 #include "base_types.hh"
 #include "matrix.hh"
 #include "trace_arrow.hh"
@@ -223,3 +226,5 @@ class Spark {
     }
 
 };
+
+#endif
