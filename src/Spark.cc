@@ -165,335 +165,102 @@ energy_t Spark::ILoopE(const pair_type &ptype_closing, const cand_pos_t &i, cons
 }
 
 
-// /**
-//  * @brief Gives the W(i,j) energy. The type of dangle model being used affects this energy. 
-//  * The type of dangle is also changed to reflect this.
-//  * 
-// */
-// energy_t Spark::E_ext_Stem(const energy_t& vij,const energy_t& vi1j,const energy_t& vij1,const energy_t& vi1j1, const cand_pos_t i,const cand_pos_t j, Dangle &d){
-
-// 	energy_t e = INF;
-
-//     auto consider = [&](energy_t v, bool valid, pair_type tt, base_type s5, base_type s3, Dangle &d, int d_type) {
-//         if (!valid || v == INF) return;
-//         if(v + E_ExtLoop(tt, s5, s3, params_) < e){
-//             e = v + E_ExtLoop(tt, s5, s3, params_);
-//             d = d_type;
-//         }
-//         e = std::min(e, v + E_ExtLoop(tt, s5, s3, params_));
-//     };
-// 	base_type si1  = i > 1 ? S_[i-1] : -1;
-//     base_type sj1  = j < n_ ? S_[j+1] : -1;
-//     base_type si = S_[i];
-//     base_type sj = S_[j];
-
-// 	bool dangle2 = params_->model_details.dangles == 2;
-//     bool dangle1 = params_->model_details.dangles == 1;
-
-// 	consider(vij, ((tree->tree[i].pair < -1 && tree->tree[j].pair < -1) || (tree->tree[i].pair == j && tree->tree[j].pair == i)), pair[S_[i]][S_[j]], dangle2 ? si1 : -1, dangle2 ? sj1 : -1,d,0);
-// 	if (dangle1) {
-//         consider(vi1j,j-i-1>TURN && (((tree->tree[i + 1].pair < -1 && tree->tree[j].pair < -1) || (tree->tree[i + 1].pair == j)) && tree->tree[i].pair < 0), pair[S_[i+1]][S_[j]], si, -1,d,1);
-//         consider(vij1,j-1-i>TURN && (((tree->tree[i].pair < -1 && tree->tree[j - 1].pair < -1) || (tree->tree[i].pair == j - 1)) && tree->tree[j].pair < 0), pair[S_[i]][S_[j-1]], -1, sj,d,2);
-//         consider(vi1j1,j-1-i-1>TURN && (((tree->tree[i + 1].pair < -1 && tree->tree[j - 1].pair < -1) || (tree->tree[i + 1].pair == j - 1)) &&tree-> tree[i].pair < 0 && tree->tree[j].pair < 0), pair[S_[i+1]][S_[j-1]], si, sj,d,3);
-//     }
-// 	return e;
-// }
 /**
- * @brief Gives the W(i,j) energy. The type of dangle model being used affects this energy.
+ * @brief Gives the W(i,j) energy. The type of dangle model being used affects this energy. 
  * The type of dangle is also changed to reflect this.
- *
- * @param vij The V(i,j) energy
- * @param vi1j The V(i+1,j) energy
- * @param vij1 The V(i,j-1) energy
- * @param vi1j1 The V(i+1,j-1) energy
- */
-energy_t E_ext_Stem(const energy_t &vij, const energy_t &vi1j, const energy_t &vij1, const energy_t &vi1j1, const short *S, vrna_param_t *params,
-                    const cand_pos_t i, const cand_pos_t j, Dangle &d, cand_pos_t n, const std::vector<Node> &tree) {
+ * 
+*/
+energy_t Spark::E_ext_Stem(const energy_t& vij,const energy_t& vi1j,const energy_t& vij1,const energy_t& vi1j1, const cand_pos_t i,const cand_pos_t j, Dangle &d){
 
-    energy_t e = INF, en = INF;
-    pair_type tt = pair[S[i]][S[j]];
+	energy_t e = INF;
 
-    if ((tree[i].pair < -1 && tree[j].pair < -1) || (tree[i].pair == j && tree[j].pair == i)) {
-        en = vij; // i j
-
-        if (en != INF) {
-            if (params->model_details.dangles == 2) {
-                base_type si1 = i > 1 ? S[i - 1] : -1;
-                base_type sj1 = j < n ? S[j + 1] : -1;
-                en += E_ExtLoop(tt, si1, sj1, params);
-            } else {
-                en += E_ExtLoop(tt, -1, -1, params);
-                d = 0;
-            }
-
-            e = std::min(e, en);
+    auto consider = [&](energy_t v, bool valid, pair_type tt, base_type s5, base_type s3, Dangle &d, int d_type) {
+        if (!valid || v == INF) return;
+        if(v + E_ExtLoop(tt, s5, s3, params_) < e){
+            e = v + E_ExtLoop(tt, s5, s3, params_);
+            d = d_type;
         }
+        e = std::min(e, v + E_ExtLoop(tt, s5, s3, params_));
+    };
+	base_type si1  = i > 1 ? S_[i-1] : -1;
+    base_type sj1  = j < n_ ? S_[j+1] : -1;
+    base_type si = S_[i];
+    base_type sj = S_[j];
+
+	bool dangle2 = params_->model_details.dangles == 2;
+    bool dangle1 = params_->model_details.dangles == 1;
+
+	consider(vij, ((tree->tree[i].pair < -1 && tree->tree[j].pair < -1) || (tree->tree[i].pair == j && tree->tree[j].pair == i)), pair[S_[i]][S_[j]], dangle2 ? si1 : -1, dangle2 ? sj1 : -1,d, dangle2 ? d : 0);
+	if (dangle1) {
+        consider(vi1j,j-i-1>TURN && (((tree->tree[i + 1].pair < -1 && tree->tree[j].pair < -1) || (tree->tree[i + 1].pair == j)) && tree->tree[i].pair < 0), pair[S_[i+1]][S_[j]], si, -1,d,1);
+        consider(vij1,j-1-i>TURN && (((tree->tree[i].pair < -1 && tree->tree[j - 1].pair < -1) || (tree->tree[i].pair == j - 1)) && tree->tree[j].pair < 0), pair[S_[i]][S_[j-1]], -1, sj,d,2);
+        consider(vi1j1,j-1-i-1>TURN && (((tree->tree[i + 1].pair < -1 && tree->tree[j - 1].pair < -1) || (tree->tree[i + 1].pair == j - 1)) &&tree-> tree[i].pair < 0 && tree->tree[j].pair < 0), pair[S_[i+1]][S_[j-1]], si, sj,d,3);
     }
+	return e;
+}
+/**
+* @brief Computes the multiloop V contribution. This gives back essentially VM(i,j).
+* 
+*/
+energy_t Spark::E_MbLoop(const std::vector<energy_t> &dmli1, const std::vector<energy_t> &dmli2, cand_pos_t i, cand_pos_t j){
+	energy_t e = INF;
 
-    if (params->model_details.dangles == 1) {
-        tt = pair[S[i + 1]][S[j]];
-        if (((tree[i + 1].pair < -1 && tree[j].pair < -1) || (tree[i + 1].pair == j)) && tree[i].pair < 0) {
-            en = (j - i - 1 > TURN) ? vi1j : INF; // i+1 j
+    bool pairable = (tree->tree[i].pair < -1 && tree->tree[j].pair < -1) || (tree->tree[i].pair == j);
+    pair_type tt = pair[S_[j]][S_[i]];
+    base_type si1 = S_[i+1];
+    base_type sj1 = S_[j-1];
 
-            if (en != INF) {
+	auto consider = [&](energy_t v, bool check, base_type s5, base_type s3, int ml_count) {
+        if (check && v == INF) return;
+        e = std::min(e, v + E_MLstem(tt, s5, s3, params_) + params_->MLclosing + ml_count * params_->MLbase);
+    };
 
-                base_type si1 = S[i];
-                en += E_ExtLoop(tt, si1, -1, params);
-            }
+	bool dangle2 = params_->model_details.dangles == 2;
+    bool dangle1 = params_->model_details.dangles == 1;
 
-            e = std::min(e, en);
-            if (e == en) {
-                d = 1;
-            }
-        }
-        tt = pair[S[i]][S[j - 1]];
-        if (((tree[i].pair < -1 && tree[j - 1].pair < -1) || (tree[i].pair == j - 1)) && tree[j].pair < 0) {
-            en = (j - 1 - i > TURN) ? vij1 : INF; // i j-1
-            if (en != INF) {
-
-                base_type sj1 = S[j];
-
-                en += E_ExtLoop(tt, -1, sj1, params);
-            }
-            e = std::min(e, en);
-            if (e == en) {
-                d = 2;
-            }
-        }
-        tt = pair[S[i + 1]][S[j - 1]];
-        if (((tree[i + 1].pair < -1 && tree[j - 1].pair < -1) || (tree[i + 1].pair == j - 1)) && tree[i].pair < 0 && tree[j].pair < 0) {
-            en = (j - 1 - i - 1 > TURN) ? vi1j1 : INF; // i+1 j-1
-
-            if (en != INF) {
-
-                base_type si1 = S[i];
-                base_type sj1 = S[j];
-
-                en += E_ExtLoop(tt, si1, sj1, params);
-            }
-            e = std::min(e, en);
-            if (e == en) {
-                d = 3;
-            }
-        }
-    }
-    return e;
+	consider(dmli1[j-1],pairable, dangle2 ? sj1 : -1, dangle2 ? si1 : -1, 0);
+	if(dangle1){
+		// ML pair 5 — closing (i,j) with mb part [i+2, j-1]
+		consider(dmli2[j-1],pairable && tree->tree[i+1].pair < 0, -1, si1, 1);
+        // ML pair 3 — closing (i,j) with mb part [i+1, j-2]
+        consider(dmli1[j-2],pairable && tree->tree[j-1].pair < 0, sj1, -1, 1);
+        // ML pair 53 — closing (i,j) with mb part [i+2, j-2]
+        consider(dmli2[j-2],pairable && tree->tree[i+1].pair < 0 && tree->tree[j-1].pair < 0, sj1, si1, 2);
+	}
+	return e;
 }
 
-
 /**
- * @brief Computes the multiloop V contribution. This gives back essentially VM(i,j).
- *
- * @param dmli1 Row of WM2 from one iteration ago
- * @param dmli2 Row of WM2 from two iterations ago
- */
-energy_t E_MbLoop(const std::vector<energy_t> &dmli1, const std::vector<energy_t> &dmli2, const short *S, vrna_param_t *params, cand_pos_t i, cand_pos_t j,
-                  const std::vector<Node> &tree) {
-
-    energy_t e = INF, en = INF;
-    pair_type tt = pair[S[j]][S[i]];
-    bool pairable = (tree[i].pair < -1 && tree[j].pair < -1) || (tree[i].pair == j);
-
-    /* double dangles */
-    switch (params->model_details.dangles) {
-    case 2:
-        if (pairable) {
-            e = dmli1[j - 1];
-
-            if (e != INF) {
-
-                base_type si1 = S[i + 1];
-                base_type sj1 = S[j - 1];
-
-                e += E_MLstem(tt, sj1, si1, params) + params->MLclosing;
-            }
-        }
-        break;
-
-    case 1:
-        /**
-         * ML pair D0
-         *  new closing pair (i,j) with mb part [i+1,j-1]
-         */
-
-        if (pairable) {
-            e = dmli1[j - 1];
-
-            if (e != INF) {
-
-                e += E_MLstem(tt, -1, -1, params) + params->MLclosing;
-            }
-        }
-        /**
-         * ML pair 5
-         * new closing pair (i,j) with mb part [i+2,j-1]
-         */
-
-        if (pairable && tree[i + 1].pair < 0) {
-            en = dmli2[j - 1];
-
-            if (en != INF) {
-
-                base_type si1 = S[i + 1];
-
-                en += E_MLstem(tt, -1, si1, params) + params->MLclosing + params->MLbase;
-            }
-        }
-        e = std::min(e, en);
-
-        /**
-         * ML pair 3
-         * new closing pair (i,j) with mb part [i+1, j-2]
-         */
-        if (pairable && tree[j - 1].pair < 0) {
-            en = dmli1[j - 2];
-
-            if (en != INF) {
-                base_type sj1 = S[j - 1];
-
-                en += E_MLstem(tt, sj1, -1, params) + params->MLclosing + params->MLbase;
-            }
-        }
-        e = std::min(e, en);
-        /**
-         * ML pair 53
-         * new closing pair (i,j) with mb part [i+2.j-2]
-         */
-        if (pairable && tree[i + 1].pair < 0 && tree[j - 1].pair < 0) {
-            en = dmli2[j - 2];
-
-            if (en != INF) {
-
-                base_type si1 = S[i + 1];
-                base_type sj1 = S[j - 1];
-
-                en += E_MLstem(tt, sj1, si1, params) + params->MLclosing + 2 * params->MLbase;
-            }
-        }
-        e = std::min(e, en);
-        break;
-    case 0:
-        if (pairable) {
-            e = dmli1[j - 1];
-
-            if (e != INF) {
-                e += E_MLstem(tt, -1, -1, params) + params->MLclosing;
-            }
-        }
-        break;
-    }
-
-    return e;
-}
-// /**
-// * @brief Computes the multiloop V contribution. This gives back essentially VM(i,j).
-// * 
-// */
-// energy_t Spark::E_MbLoop(const std::vector<energy_t> &dmli1, const std::vector<energy_t> &dmli2, cand_pos_t i, cand_pos_t j){
-// 	energy_t e = INF;
-
-//     bool pairable = (tree->tree[i].pair < -1 && tree->tree[j].pair < -1) || (tree->tree[i].pair == j);
-//     pair_type tt = pair[S_[j]][S_[i]];
-//     base_type si1 = S_[i+1];
-//     base_type sj1 = S_[j-1];
-
-// 	auto consider = [&](energy_t v, bool check, base_type s5, base_type s3, int ml_count) {
-//         if (check && v == INF) return;
-//         e = std::min(e, v + E_MLstem(tt, s5, s3, params_) + params_->MLclosing + ml_count * params_->MLbase);
-//     };
-
-// 	bool dangle2 = params_->model_details.dangles == 2;
-//     bool dangle1 = params_->model_details.dangles == 1;
-
-// 	consider(dmli1[j-1],pairable, dangle2 ? sj1 : -1, dangle2 ? si1 : -1, 0);
-// 	if(dangle1){
-// 		// ML pair 5 — closing (i,j) with mb part [i+2, j-1]
-// 		consider(dmli2[j-1],pairable && tree->tree[i+1].pair < 0, -1, si1, 1);
-//         // ML pair 3 — closing (i,j) with mb part [i+1, j-2]
-//         consider(dmli1[j-2],pairable && tree->tree[j-1].pair < 0, sj1, -1, 1);
-//         // ML pair 53 — closing (i,j) with mb part [i+2, j-2]
-//         consider(dmli2[j-2],pairable && tree->tree[i+1].pair < 0 && tree->tree[j-1].pair < 0, sj1, si1, 2);
-// 	}
-// 	return e;
-// }
-/**
- * @brief Gives the WM(i,j) energy. The type of dangle model being used affects this energy.
+ * @brief Gives the WM(i,j) energy. The type of dangle model being used affects this energy. 
  * The type of dangle is also changed to reflect this.
- *
- * @param vij The V(i,j) energy
- * @param vi1j The V(i+1,j) energy
- * @param vij1 The V(i,j-1) energy
- * @param vi1j1 The V(i+1,j-1) energy
- */
-energy_t E_MLStem(const energy_t &vij, const energy_t &vi1j, const energy_t &vij1, const energy_t &vi1j1, const short *S, vrna_param_t *params,
-                  cand_pos_t i, cand_pos_t j, Dangle &d, const cand_pos_t &n, const std::vector<Node> &tree) {
+ * 
+*/
+energy_t Spark::E_MLStem(const energy_t& vij,const energy_t& vi1j,const energy_t& vij1,const energy_t& vi1j1,cand_pos_t i, cand_pos_t j, Dangle &d){
 
-    energy_t e = INF, en = INF;
+	energy_t e = INF;
 
-    pair_type type = pair[S[i]][S[j]];
-
-    if ((tree[i].pair < -1 && tree[j].pair < -1) || (tree[i].pair == j)) {
-        en = vij; // i j
-        if (en != INF) {
-            if (params->model_details.dangles == 2) {
-                base_type mm5 = i > 1 ? S[i - 1] : -1;
-                base_type mm3 = j < n ? S[j + 1] : -1;
-                en += E_MLstem(type, mm5, mm3, params);
-            } else {
-                en += E_MLstem(type, -1, -1, params);
-                d = 0;
-            }
-            e = std::min(e, en);
+    auto consider = [&](energy_t v, bool valid, pair_type type, base_type s5, base_type s3, int ml_count, Dangle &d, int d_type) {
+        if (!valid || v == INF) return;
+        if(v + E_MLstem(type, s5, s3, params_) + ml_count * params_->MLbase < e){
+            e = v + E_MLstem(type, s5, s3, params_) + ml_count * params_->MLbase;
+            d = d_type;
         }
-    }
-    if (params->model_details.dangles == 1) {
-        const base_type mm5 = S[i], mm3 = S[j];
+    };
 
-        if (((tree[i + 1].pair < -1 && tree[j].pair < -1) || (tree[i + 1].pair == j)) && tree[i].pair < 0) {
-            en = (j - i - 1 > TURN) ? vi1j : INF; // i+1 j
-            if (en != INF) {
-                en += params->MLbase;
+	base_type si1  = i > 1 ? S_[i-1] : -1;
+    base_type sj1  = j < n_ ? S_[j+1] : -1;
+    base_type si = S_[i];
+    base_type sj = S_[j];
 
-                type = pair[S[i + 1]][S[j]];
-                en += E_MLstem(type, mm5, -1, params);
+	bool dangle2 = params_->model_details.dangles == 2;
+    bool dangle1 = params_->model_details.dangles == 1;
 
-                e = std::min(e, en);
-                if (e == en) {
-                    d = 1;
-                }
-            }
-        }
-
-        if (((tree[i].pair < -1 && tree[j - 1].pair < -1) || (tree[i].pair == j - 1)) && tree[j].pair < 0) {
-            en = (j - 1 - i > TURN) ? vij1 : INF; // i j-1
-            if (en != INF) {
-                en += params->MLbase;
-
-                type = pair[S[i]][S[j - 1]];
-                en += E_MLstem(type, -1, mm3, params);
-
-                e = std::min(e, en);
-                if (e == en) {
-                    d = 2;
-                }
-            }
-        }
-        if (((tree[i + 1].pair < -1 && tree[j - 1].pair < -1) || (tree[i + 1].pair == j - 1)) && tree[i].pair < 0 && tree[j].pair < 0) {
-            en = (j - 1 - i - 1 > TURN) ? vi1j1 : INF; // i+1 j-1
-            if (en != INF) {
-                en += 2 * params->MLbase;
-
-                type = pair[S[i + 1]][S[j - 1]];
-                en += E_MLstem(type, mm5, mm3, params);
-
-                e = std::min(e, en);
-                if (e == en) {
-                    d = 3;
-                }
-            }
-        }
-    }
-
+	consider(vij, (tree->tree[i].pair < -1 && tree->tree[j].pair < -1) || (tree->tree[i].pair == j), pair[S_[i]][S_[j]], dangle2 ? si1 : -1, dangle2 ? sj1 : -1, 0,d,dangle2 ? d : 0);
+	if (dangle1) {
+		consider(vi1j,j-i-1>TURN && (((tree->tree[i + 1].pair < -1 && tree->tree[j].pair < -1) || (tree->tree[i + 1].pair == j)) && tree->tree[i].pair < 0), pair[S_[i+1]][S_[j]], si, -1, 1,d,1);
+        consider(vij1,j-1-i>TURN && (((tree->tree[i].pair < -1 && tree->tree[j - 1].pair < -1) || (tree->tree[i].pair == j - 1)) && tree->tree[j].pair < 0), pair[S_[i]][S_[j-1]], -1, sj, 1,d,2);
+        consider(vi1j1,j-1-i-1>TURN && (((tree->tree[i + 1].pair < -1 && tree->tree[j - 1].pair < -1) || (tree->tree[i + 1].pair == j - 1)) && tree->tree[i].pair < 0 && tree->tree[j].pair < 0), pair[S_[i+1]][S_[j-1]], si, sj, 2,d,3);
+	}
     return e;
 }
 
@@ -887,7 +654,7 @@ void Spark::compute_WMB_case1(cand_pos_t j, energy_t &m1, energy_t &BE_en, cand_
  * @param WM2ij1 The WM2 energy for the region [i,j-1]
  * @param WM2i1j1 The WM2 energy for the region [i+1,j-1]
  */
-void Spark::find_mb_dangle(const energy_t WM2ij, const energy_t WM2i1j, const energy_t WM2ij1, const energy_t WM2i1j1, const cand_pos_t i, const cand_pos_t j, cand_pos_t k, cand_pos_t l) {
+void Spark::find_mb_dangle(const energy_t WM2ij, const energy_t WM2i1j, const energy_t WM2ij1, const energy_t WM2i1j1, const cand_pos_t i, const cand_pos_t j, cand_pos_t &k, cand_pos_t &l) {
 
     const pair_type tt = pair[S_[j]][S_[i]];
     const energy_t e1 = WM2ij + E_MLstem(tt, -1, -1, params_);
@@ -2356,7 +2123,7 @@ energy_t Spark::fold(){
                 if ((tree->tree[i].pair < -1 && tree->tree[j].pair < -1) || tree->tree[i].pair == j) {
                     v_iloop = compute_internal(i, j, best_k, best_l, best_e);
                 }
-                const energy_t v_split = E_MbLoop(dmli1_, dmli2_,S_,params_, i, j,tree->tree);
+                const energy_t v_split = E_MbLoop(dmli1_, dmli2_, i, j);
 
                 v = std::min(v_h, std::min(v_iloop, v_split));
                 // register required trace arrows from (i,j)
@@ -2379,9 +2146,9 @@ energy_t Spark::fold(){
             energy_t vi1j1 = V_(ip1_mod, j - 1);
 
             // Checking the dangle positions for W
-            energy_t w_v = E_ext_Stem(v, vi1j, vij1, vi1j1, S_, params_, i, j, d, n_, tree->tree);
+            energy_t w_v = E_ext_Stem(v, vi1j, vij1, vi1j1, i, j, d);
             // Checking the dangle positions for W
-            const energy_t wm_v = E_MLStem(v, vi1j, vij1, vi1j1, S_, params_, i, j, d, n_, tree->tree);
+            const energy_t wm_v = E_MLStem(v, vi1j, vij1, vi1j1, i, j, d);
 
             cand_pos_t k = i;
             cand_pos_t l = j;
