@@ -50,7 +50,7 @@ else()
         -march=native
         -Wall
         -Wextra
-        -Wpedantic
+        # -Wpedantic
     )
 endif()
 
