@@ -2006,7 +2006,7 @@ energy_t compute_BE(cand_pos_t i, cand_pos_t j, cand_pos_t ip, cand_pos_t jp, Sp
     energy_t m1 = INF, m2 = INF, m3 = INF, m4 = INF, m5 = INF, val = INF;
     // 1
     if (i + 1 == lp && ip - 1 == l) {
-        m1 = lrint(e_stP_penalty * ILoopE(spark.S_, spark.S1_, spark.params_, ptype_closing_iip, i, j, lp, l)) + BE_energy;
+        m1 = lrint(e_stP_penalty * ILoopE(spark.S_, spark.S1_, spark.params_, ptype_closing_iip, i, ip, lp, l)) + BE_energy;
         val = std::min(val, m1);
     }
 
@@ -2017,7 +2017,7 @@ energy_t compute_BE(cand_pos_t i, cand_pos_t j, cand_pos_t ip, cand_pos_t jp, Sp
 
     // 2
     if (empty_region_ilp && empty_region_lip) {
-        m2 = lrint(e_intP_penalty * ILoopE(spark.S_, spark.S1_, spark.params_, ptype_closing_iip, i, j, lp, l)) + BE_energy;
+        m2 = lrint(e_intP_penalty * ILoopE(spark.S_, spark.S1_, spark.params_, ptype_closing_iip, i, ip, lp, l)) + BE_energy;
         val = std::min(val, m2);
     }
 
@@ -2663,8 +2663,8 @@ energy_t fold(Spark &spark, sparse_tree &tree, const cand_pos_t n, const bool ga
             if (w_v < w_split || wm_v < wm_split || wi_v < wi_split || wip_v < wip_split || paired) {
                 // cand_pos_t k_mod = k%(MAXLOOP+1);
                 // Encode the dangles into the energies
-                energy_t w_enc = (w_v << 2) | d;
-                energy_t wm_enc = (wm_v << 2) | d;
+                energy_t w_enc  = (static_cast<unsigned int>(w_v) << 2) | d;
+                energy_t wm_enc = (static_cast<unsigned int>(wm_v) << 2) | d;
                 register_candidate(spark.CL_, i, j, spark.V_(i_mod, j), wm_enc, w_enc);
                 // always keep arrows starting from candidates
                 inc_source_ref_count(spark.ta_, i, j);

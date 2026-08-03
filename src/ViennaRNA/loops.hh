@@ -207,6 +207,17 @@ inline double exp_E_Hairpin(int u, int type, short si1, short sj1, const char *s
 
 inline int E_IntLoop(int n1, int n2, int type, int type_2, int si1, int sj1, int sp1, int sq1, vrna_param_t *P){
   /* compute energy of degree 2 loop (stack bulge or interior) */
+
+   if (n1 < 0 || n2 < 0) {
+        std::fprintf(
+            stderr,
+            "E_IntLoop: invalid lengths: n1=%d, n2=%d\n",
+            n1,
+            n2
+        );
+        std::abort();
+    }
+
   int nl, ns, u, energy;
 
   energy = INF;
