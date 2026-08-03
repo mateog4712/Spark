@@ -20,6 +20,9 @@
 /** The maximum loop length */
 #define MAXLOOP 30
 
+/** The maximum interior loop length */
+#define MAX_INTLOOP  (static_cast<unsigned int>(std::min(30, MAXLOOP)))
+
 #define UNIT 100
 
 #define MINPSCORE -2 * UNIT
