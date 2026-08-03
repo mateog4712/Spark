@@ -88,9 +88,7 @@ static int set_parameters_from_string(char **file_content, const char *name);
 
 static char **file2array(const char fname[]);
 
-static int save_parameter_file(const char fname[], unsigned int options);
-
-int vrna_params_load(const char fname[], unsigned int options) {
+int vrna_params_load(const char fname[], [[maybe_unused]] unsigned int options) {
     char *name, **file_content, **ptr;
     int ret;
 
@@ -162,7 +160,7 @@ static char **file2array(const char fname[]) {
     return content;
 }
 
-int vrna_params_load_from_string(const char *string, const char *name, unsigned int options){
+int vrna_params_load_from_string(const char *string, const char *name, [[maybe_unused]] unsigned int options){
   int ret = 0;
 
   if (string) {
@@ -731,7 +729,7 @@ static void rd_5dim_slice(char **content, size_t *line_no, int *array, int dim[5
 *** \param dim1   The size of the first dimension
 *** \param shift1 The pre shift for the first dimension
 **/
-static void rd_6dim(char **content, size_t *line_no, int *array, int dim[6], int shift[6]) {
+[[maybe_unused]] static void rd_6dim(char **content, size_t *line_no, int *array, int dim[6], int shift[6]) {
     int post[6] = {0, 0, 0, 0, 0, 0};
 
     rd_6dim_slice(content, line_no, array, dim, shift, post);
