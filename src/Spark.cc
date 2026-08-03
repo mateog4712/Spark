@@ -1369,6 +1369,12 @@ void trace_WMB(Spark &spark, const bool &mark_candidates, cand_pos_t i, cand_pos
  */
 void trace_VP(Spark &spark, const bool &mark_candidates, cand_pos_t i, cand_pos_t j, energy_t e, sparse_tree &tree) {
     if (debug) printf("VP at %d and %d with %d\n", i, j, e);
+
+    if (i < 0 || j < 0 || i >= spark.n_ || j >= spark.n_) {
+        printf("Error: i or j out of bounds in trace_VP: i=%d, j=%d, n=%d\n", i, j, spark.n_);
+        return;
+    }
+
     spark.structure_[i] = '[';
     spark.structure_[j] = ']';
     if (e == 0) return;
@@ -1412,8 +1418,8 @@ void trace_VP(Spark &spark, const bool &mark_candidates, cand_pos_t i, cand_pos_
     if (exists_trace_arrow_from(spark.taVP_, i, j)) {
 
         const TraceArrow &arrow = trace_arrow_from(spark.taVP_, i, j);
-        const size_t k = arrow.k(i);
-        const size_t l = arrow.l(j);
+        const cand_pos_t k = arrow.k(i);
+        const cand_pos_t l = arrow.l(j);
         assert(i < k);
         assert(l < j);
         trace_VP(spark, mark_candidates, k, l, arrow.target_energy(), tree);
