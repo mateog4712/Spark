@@ -20,7 +20,7 @@ class Node {
     // vector of the positions of the children (base pairs only)
     std::vector<int> children;
 
-    Node(int index) { this->index = index; }
+    Node(int idx): index(idx) {}
     Node() {}
 };
 
@@ -35,23 +35,23 @@ class sparse_tree {
     std::vector<int> depthArr; // depths corresponding to euler
     std::vector<int> logn;     // holds logn values
     std::vector<int> up;       // vector holding unpaired bases
-    uint16_t n;
+    uint16_t n;                // The length of the structure
     std::string structure;
     int ptr; // Pointer to euler walk
     // uint16_t** sparse_table;
     std::vector<std::vector<int>> sparse_table;
     int p2[maxSize];
 
-    sparse_tree(std::string structure, int n) {
-        this->n = n;
-        this->structure = structure;
+    sparse_tree(std::string restricted_structure, int length) {
+        n = length;
+        structure = restricted_structure;
         tree.resize(n + 1, Node());
         tree[0] = Node(0);
         FAI.resize(2 * (n + 1), -1);
         level.resize((n + 1), -1);
         up.resize(n + 1);
         logn.resize(2 * (n + 1));
-        create_tree(n, structure);
+        create_tree();
         preprocess();
         ptr = 0;
 
@@ -109,19 +109,24 @@ class sparse_tree {
      * Fill the array p2 with the powers of 2 so that we do not need to recalculate them
      */
     void preprocess() {
-        // memorizing powers of 2
+        // Store powers of 2
         p2[0] = 1;
-        for (int i = 1; i < maxSize; i++)
+        for (int i = 1; i < maxSize; ++i) {
             p2[i] = p2[i - 1] * 2;
+        }
 
-        // memorizing all log(n) values
-        int val = 1, ptr = 0;
-        for (int i = 1; i < 2 * n; i++) {
-            logn[i] = ptr - 1;
-            if (val == i) {
-                val *= 2;
-                logn[i] = ptr;
-                ptr++;
+        // Store floor(log2(i))
+        int nextPowerOfTwo = 1;
+        int exponent = 0;
+
+        // Fill the logn array with the floor(log2(i)) values
+        for (int i = 1; i < 2 * n; ++i) {
+            logn[i] = exponent - 1;
+
+            if (i == nextPowerOfTwo) {
+                logn[i] = exponent;
+                nextPowerOfTwo *= 2;
+                ++exponent;
             }
         }
     }
@@ -134,7 +139,7 @@ class sparse_tree {
      * If the index is an opening pair, we push it back as one of the children of the parent and push the index into the stack
      * If the index is an x, the base cannot pair and we change the pair value to -1
      */
-    void create_tree(int n, std::string structure) {
+    void create_tree() {
 
         // std::vector<Node> stack;
         std::vector<int> stackI;
