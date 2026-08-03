@@ -1,0 +1,47 @@
+name: CMake on multiple platforms
+
+on:
+  workflow_dispatch:
+  push:         { branches: [master] }
+  pull_request: { branches: [master] }
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, ubuntu-24.04-arm, macos-latest, macos-15-intel]
+        build_type: [Debug]
+        include:
+          - { os: ubuntu-latest   , c_compiler: gcc  , cpp_compiler: g++      }
+          - { os: ubuntu-24.04-arm, c_compiler: gcc  , cpp_compiler: g++      }
+          - { os: macos-latest    , c_compiler: clang, cpp_compiler: clang++  }
+          - { os: macos-15-intel  , c_compiler: clang, cpp_compiler: clang++  }
+
+    steps:
+    - uses: actions/checkout@v5
+      with:
+        submodules: true
+
+    # -------------------- Build --------------------
+    - name: Set reusable strings
+      id: strings
+      shell: bash
+      run: echo "build-output-dir=${{ github.workspace }}/build" >>"$GITHUB_OUTPUT"
+
+    - name: Configure CMake
+      run: >
+        cmake -B ${{ steps.strings.outputs.build-output-dir }}
+        -S ${{ github.workspace }}
+        -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
+        -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
+        -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+
+    - name: Build
+      run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --parallel
+
+    # # -------------------- Test --------------------
+    # - name: Test Spark
+    #   working-directory: ${{ steps.strings.outputs.build-output-dir }}
+    #   run: ctest --output-on-failure
