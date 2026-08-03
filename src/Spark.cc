@@ -955,9 +955,9 @@ void find_mb_dangle(const energy_t WM2ij, const energy_t WM2i1j, const energy_t 
 
     const pair_type tt = pair[S[j]][S[i]];
     const energy_t e1 = WM2ij + E_MLstem(tt, -1, -1, params);
-    const energy_t e2 = WM2i1j + E_MLstem(tt, -1, S[i + 1], params);
-    const energy_t e3 = WM2ij1 + E_MLstem(tt, S[j - 1], -1, params);
-    const energy_t e4 = WM2i1j1 + E_MLstem(tt, S[j - 1], S[i + 1], params);
+    const energy_t e2 = WM2i1j + E_MLstem(tt, -1, S[i + 1], params) + params->MLbase;;
+    const energy_t e3 = WM2ij1 + E_MLstem(tt, S[j - 1], -1, params) + params->MLbase;;
+    const energy_t e4 = WM2i1j1 + E_MLstem(tt, S[j - 1], S[i + 1], params) + 2 * params->MLbase;
     energy_t e = e1;
 
     if (e2 < e && tree[i + 1].pair < 0) {
