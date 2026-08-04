@@ -1095,7 +1095,7 @@ void trace_V(Spark &spark, const bool &mark_candidates, cand_pos_t i, cand_pos_t
 
         // try to trace back to a candidate: (still) interior loop case
         cand_pos_t l_min = std::max(i, j - 31);
-        for (cand_pos_t l = j - 1; l > l_min; l--) {
+        for (cand_pos_t l = j - 1; l >= l_min; l--) {
             // Break if it's an assured dangle case
             for (auto it = spark.CL_[l].begin(); spark.CL_[l].end() != it && it->first > i; ++it) {
                 const cand_pos_t k = it->first;
@@ -1429,7 +1429,7 @@ void trace_VP(Spark &spark, const bool &mark_candidates, cand_pos_t i, cand_pos_
 
         // try to trace back to a candidate: (still) interior loop case
         cand_pos_t l_min = std::max(i, j - 31);
-        for (cand_pos_t l = j - 1; l > l_min; l--) {
+        for (cand_pos_t l = j - 1; l >= l_min; l--) {
             // Break if it's an assured dangle case
             for (auto it = spark.CLVP_[l].begin(); spark.CLVP_[l].end() != it && it->first > i; ++it) {
                 const cand_pos_t k = it->first;
