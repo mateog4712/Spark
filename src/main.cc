@@ -24,8 +24,8 @@ void validate_structure(std::string &seq, std::string &structure) {
         if (structure[j] == '(') pairs.push_back(j);
         if (structure[j] == ')') {
             if (pairs.empty()) {
-                std::cout << "Incorrect input: More left parentheses than right" << std::endl;
-                exit(0);
+                std::cerr << "Incorrect input: More left parentheses than right" << std::endl;
+                exit(EXIT_FAILURE);
             } else {
                 cand_pos_t i = pairs.back();
                 pairs.pop_back();
@@ -35,15 +35,19 @@ void validate_structure(std::string &seq, std::string &structure) {
                 } else if ((seq[i] == 'U' && seq[j] == 'G') || (seq[i] == 'U' && seq[j] == 'A')) {
                 } else if ((seq[i] == 'A' && seq[j] == 'T') || (seq[i] == 'T' && seq[j] == 'A')) {
                 } else {
-                    std::cout << "Incorrect input: " << seq[i] << " does not pair with " << seq[j] << std::endl;
-                    exit(0);
+                    std::cerr << "Incorrect input: " << seq[i] << " does not pair with " << seq[j] << std::endl;
+                    exit(EXIT_FAILURE);
                 }
             }
+        }
+        if(structure[j] != '(' && structure[j] != ')' && structure[j] != '.' && structure[j] != 'x'){
+            std::cerr << "Incorrect symbol in input structure: " << structure[j] << std::endl;
+            exit(EXIT_FAILURE);
         }
     }
     if (!pairs.empty()) {
         std::cout << "Incorrect input: More left parentheses than right" << std::endl;
-        exit(0);
+        exit(EXIT_FAILURE);
     }
 }
 
@@ -141,10 +145,16 @@ int main(int argc, char **argv) {
 
     noGU = args_info.noGU_given;
     validate_structure(seq, restricted);
+    int dangle_model = args_info.dangles_arg;
+    if(dangle_model < 0 || dangle_model > 2){
+        vrna_message_warning("Invalid dangle model: %d. Defaulting to dangle model 2",dangle_model);
+        // std::cerr << "Invalid dangle model: " << dangle_model << ". Defaulting to dangle model 2" << std::endl;
+        dangle_model = 2;
+    }
 
     sparse_tree tree(restricted, n);
 
-    Spark spark(seq, restricted,&tree,args_info.dangles_arg,!args_info.pk_free_flag,args_info.pk_only_flag, !args_info.noGC_given,mark_candidates);
+    Spark spark(seq, restricted,&tree,dangle_model,!args_info.pk_free_flag,args_info.pk_only_flag, !args_info.noGC_given,mark_candidates);
 
     cmdline_parser_free(&args_info);
 

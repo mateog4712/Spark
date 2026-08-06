@@ -658,9 +658,9 @@ void Spark::find_mb_dangle(const energy_t WM2ij, const energy_t WM2i1j, const en
 
     const pair_type tt = pair[S_[j]][S_[i]];
     const energy_t e1 = WM2ij + E_MLstem(tt, -1, -1, params_);
-    const energy_t e2 = WM2i1j + E_MLstem(tt, -1, S_[i + 1], params_);
-    const energy_t e3 = WM2ij1 + E_MLstem(tt, S_[j - 1], -1, params_);
-    const energy_t e4 = WM2i1j1 + E_MLstem(tt, S_[j - 1], S_[i + 1], params_);
+    const energy_t e2 = WM2i1j + E_MLstem(tt, -1, S_[i + 1], params_) + params_->MLbase;
+    const energy_t e3 = WM2ij1 + E_MLstem(tt, S_[j - 1], -1, params_) + params_->MLbase;
+    const energy_t e4 = WM2i1j1 + E_MLstem(tt, S_[j - 1], S_[i + 1], params_) + 2*params_->MLbase;
     energy_t e = e1;
 
     if (e2 < e && tree->tree[i+1].pair < 0) {
@@ -798,7 +798,7 @@ void Spark::trace_V(cand_pos_t i, cand_pos_t j, energy_t e) {
 
         // try to trace back to a candidate: (still) interior loop case
         cand_pos_t l_min = std::max(i, j - 31);
-        for (cand_pos_t l = j - 1; l > l_min; l--) {
+        for (cand_pos_t l = j - 1; l >= l_min; --l) {
             // Break if it's an assured dangle case
             for (auto it = CL_[l].begin(); CL_[l].end() != it && it->first > i; ++it) {
                 const cand_pos_t k = it->first;
@@ -1123,7 +1123,7 @@ void Spark::trace_VP(cand_pos_t i, cand_pos_t j, energy_t e) {
 
         // try to trace back to a candidate: (still) interior loop case
         cand_pos_t l_min = std::max(i, j - 31);
-        for (cand_pos_t l = j - 1; l > l_min; l--) {
+        for (cand_pos_t l = j - 1; l >= l_min; l--) {
             // Break if it's an assured dangle case
             for (auto it = CLVP_[l].begin(); CLVP_[l].end() != it && it->first > i; ++it) {
                 const cand_pos_t k = it->first;
@@ -1677,7 +1677,7 @@ energy_t Spark::compute_BE(cand_pos_t i, cand_pos_t j, cand_pos_t ip, cand_pos_t
     energy_t m1 = INF, m2 = INF, m3 = INF, m4 = INF, m5 = INF, val = INF;
     // 1
     if (i + 1 == lp && ip - 1 == l) {
-        m1 = lrint(e_stP_penalty * ILoopE(ptype_closing_iip, i, j, lp, l)) + BE_energy;
+        m1 = lrint(e_stP_penalty * ILoopE(ptype_closing_iip, i, ip, lp, l)) + BE_energy;
         val = std::min(val, m1);
     }
 
@@ -1688,7 +1688,7 @@ energy_t Spark::compute_BE(cand_pos_t i, cand_pos_t j, cand_pos_t ip, cand_pos_t
 
     // 2
     if (empty_region_ilp && empty_region_lip) {
-        m2 = lrint(e_intP_penalty * ILoopE(ptype_closing_iip, i, j, lp, l)) + BE_energy;
+        m2 = lrint(e_intP_penalty * ILoopE(ptype_closing_iip, i, ip, lp, l)) + BE_energy;
         val = std::min(val, m2);
     }
 
@@ -2325,8 +2325,8 @@ energy_t Spark::fold(){
             if (w_v < w_split || wm_v < wm_split || wi_v < wi_split || wip_v < wip_split || paired) {
                 // cand_pos_t k_mod = k%(MAXLOOP+1);
                 // Encode the dangles into the energies
-                energy_t w_enc = (w_v << 2) | d;
-                energy_t wm_enc = (wm_v << 2) | d;
+                energy_t w_enc = (static_cast<cand_pos_tu>(w_v) << 2) | d;
+                energy_t wm_enc = (static_cast<cand_pos_tu>(wm_v) << 2) | d;
                 register_candidate(CL_, i, j, V_(i_mod, j), wm_enc, w_enc);
                 // always keep arrows starting from candidates
                 inc_source_ref_count(ta_, i, j);

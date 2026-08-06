@@ -2,6 +2,7 @@
 #define BASE_TYPES_HH
 
 #include <iostream>
+#include <cstdint>
 
 //! type of energy
 typedef int_least32_t energy_t;
