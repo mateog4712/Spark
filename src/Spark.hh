@@ -54,6 +54,10 @@ class Spark {
         if(j<i) return 0;
         return WI_[j];
     }
+    inline energy_t get_WIP(cand_pos_t i, cand_pos_t j){
+        if(j<i) return INF;
+        return WIP_[j];
+    }
   private:
     std::string seq_;
     cand_pos_t n_;

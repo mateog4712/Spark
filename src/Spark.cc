@@ -611,7 +611,7 @@ void Spark::recompute_WV(cand_pos_t i, cand_pos_t max_j) {
 
                 cand_pos_t k = it->first;
                 energy_t vp_kj = it->second;
-                if (k < bound_left) wv = std::min(wv, WIP_[k - 1] + vp_kj);
+                if (k < bound_left) wv = std::min(wv, get_WIP(i,k-1) + vp_kj);
             }
             for (auto it = CLWMB_[j].begin(); CLWMB_[j].end() != it && it->first > bound_right; ++it) {
 
@@ -1299,8 +1299,8 @@ void Spark::trace_WV(cand_pos_t i, cand_pos_t j, energy_t e) {
     for (auto it = CLVP_[j].begin(); CLVP_[j].end() != it && it->first >= i; ++it) {
         cand_pos_t k = it->first;
         if (k > bound_left) continue;
-        if (e == WIP_[k - 1] + it->second) {
-            trace_WIP(i, k - 1, WIP_[k - 1]);
+        if (e == get_WIP(i,k-1) + it->second) {
+            trace_WIP(i, k - 1, get_WIP(i,k-1));
             trace_VP(k, j, it->second);
             return;
         }
@@ -1364,14 +1364,14 @@ void Spark::trace_WIP(cand_pos_t i, cand_pos_t j, energy_t e){
 
     // 	// How to do one base backwards?
 
-    if (e == WIP_[j - 1] + cp_penalty) {
+    if (e == get_WIP(i,j-1) + cp_penalty) {
         trace_WIP(i, j - 1, WIP_[j - 1]);
         return;
     }
     for (auto it = CL_[j].begin(); CL_[j].end() != it && it->first >= i; ++it) {
         cand_pos_t k = it->first;
-        if (e == WIP_[k - 1] + it->second + bp_penalty) {
-            trace_WIP(i, k - 1, WIP_[k - 1]);
+        if (e == get_WIP(i,k-1) + it->second + bp_penalty) {
+            trace_WIP(i, k - 1, get_WIP(i,k-1));
             trace_V(k, j, it->second);
             return;
         }
@@ -1383,9 +1383,9 @@ void Spark::trace_WIP(cand_pos_t i, cand_pos_t j, energy_t e){
 
     for (auto it = CLWMB_[j].begin(); CLWMB_[j].end() != it && it->first >= i; ++it) {
         cand_pos_t k = it->first;
-        if (e == WIP_[k - 1] + it->second + bp_penalty + PSM_penalty) {
+        if (e == get_WIP(i,k-1) + it->second + bp_penalty + PSM_penalty) {
             // Why do I pick two different variables for WIP
-            trace_WIP(i, k - 1, WIP_Bbp[k - 1]);
+            trace_WIP(i, k - 1, get_WIP(i,k-1));
             trace_WMB(k, j, it->second);
             return;
         }
