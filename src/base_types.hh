@@ -16,4 +16,6 @@ typedef int_least32_t Dangle;
 //! type of base type
 typedef int_least16_t base_type;
 
+typedef double pf_t;
+
 #endif // BASE_HH

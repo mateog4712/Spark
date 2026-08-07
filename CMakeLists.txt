@@ -50,7 +50,6 @@ else()
         -march=native
         -Wall
         -Wextra
-        -Wpedantic
     )
 endif()
 
@@ -58,6 +57,7 @@ set(spark_SOURCE
     src/cmdline.cc
     src/sparse_tree.cc
     src/Spark.cc
+    src/main.cc
     src/trace_arrow.cc 
 )
 set(vienna_SOURCE
