@@ -293,7 +293,7 @@ int Spark::compute_exterior_cases(cand_pos_t l, cand_pos_t j) {
  */
 const std::vector<energy_t> Spark::recompute_WM(cand_pos_t i, cand_pos_t max_j) {
     assert(i >= 1);
-    assert(max_j <= spark.n_);
+    assert(max_j <= n_);
     std::vector<energy_t> temp = WM_;
 
     for (cand_pos_t j = i - 1; j <= std::min(i + TURN, max_j); j++) {
@@ -337,7 +337,7 @@ const std::vector<energy_t> Spark::recompute_WM(cand_pos_t i, cand_pos_t max_j) 
  */
 const std::vector<energy_t> Spark::recompute_WM2(cand_pos_t i, cand_pos_t max_j) {
     assert(i >= 1);
-    assert(max_j <= spark.n_);
+    assert(max_j <= n_);
     std::vector<energy_t> temp = WM2_;
 
     for (cand_pos_t j = i - 1; j <= std::min(i + 2 * TURN + 2, max_j); j++) {
@@ -383,7 +383,7 @@ const std::vector<energy_t> Spark::recompute_WM2(cand_pos_t i, cand_pos_t max_j)
  */
 void Spark::recompute_WMBP(cand_pos_t i, cand_pos_t max_j) {
     assert(i >= 1);
-    assert(max_j <= spark.n_);
+    assert(max_j <= n_);
 
     for (cand_pos_t j = i + TURN + 1; j <= max_j; j++) {
         energy_t wmbp = INF;
@@ -473,9 +473,12 @@ void Spark::recompute_WI(cand_pos_t i, cand_pos_t max_j) {
     assert(max_j <= n_);
 
     // Causes vector resize error if the ifs are not there because if i is close to n, it would go past the bounds
-    for (cand_pos_t j = 0; j < 4; ++j) {
+    WI_[i] = (tree->tree[i].pair < 0) ? PUP_penalty : 0;
+    for (cand_pos_t j = 1; j < 4; ++j) {
         if (i + j < n_) {
-            WI_[i + j] = (j + 1) * PUP_penalty;
+            if(tree->tree[i+j].pair<0){
+                WI_[i + j] = WI_[i + j -1] + PUP_penalty;
+            }
         }
     }
 
@@ -516,7 +519,7 @@ void Spark::recompute_WI(cand_pos_t i, cand_pos_t max_j) {
  */
 void Spark::recompute_WIP(cand_pos_t i, cand_pos_t max_j){
     assert(i >= 1);
-    assert(max_j <= spark.n_);
+    assert(max_j <= n_);
     for (cand_pos_t j = i + TURN + 1; j <= max_j; j++) {
         energy_t wip = INF;
         for (auto it = CL_[j].begin(); CL_[j].end() != it && it->first >= i; ++it) {
@@ -552,7 +555,7 @@ void Spark::recompute_WIP(cand_pos_t i, cand_pos_t max_j){
  */
 void Spark::recompute_WVe(cand_pos_t i, cand_pos_t max_j) {
     assert(i >= 1);
-    assert(max_j <= spark.n_);
+    assert(max_j <= n_);
     for (cand_pos_t j = i + TURN + 1; j <= max_j; j++) {
         energy_t wve = INF;
         for (auto it = CLVP_[j].begin(); CLVP_[j].end() != it && it->first >= i; ++it) {
@@ -774,7 +777,7 @@ void Spark::trace_V(cand_pos_t i, cand_pos_t j, energy_t e) {
     if (debug) printf("V at %d and %d with %d\n", i, j, e);
 
     assert(i + TURN + 1 <= j);
-    assert(j <= spark.n_);
+    assert(j <= n_);
 
     if (mark_candidates_ && is_candidate(CL_, cand_comp, i, j)) {
         structure_[i] = '{';
@@ -1036,7 +1039,7 @@ void Spark::trace_WM2(cand_pos_t i, cand_pos_t j) {
 void Spark::trace_WMB(cand_pos_t i, cand_pos_t j, energy_t e) {
     if (debug) printf("WMB at i is %d and j is %d and e is %d\n", i, j, e);
     assert(i + TURN + 1 <= j);
-    assert(j <= spark.n_);
+    assert(j <= n_);
 
     recompute_WMBP(i, j);
 
@@ -1069,6 +1072,12 @@ void Spark::trace_WMB(cand_pos_t i, cand_pos_t j, energy_t e) {
  */
 void Spark::trace_VP(cand_pos_t i, cand_pos_t j, energy_t e) {
     if (debug) printf("VP at %d and %d with %d\n", i, j, e);
+    
+    if (i < 0 || j < 0 || i >= n_ || j >= n_) {
+        vrna_message_warning("Error: i or j out of bounds in trace_VP: i=%d, j=%d, n=%d\n", i, j, n_);
+        return;
+    }
+
     structure_[i] = '[';
     structure_[j] = ']';
     if (e == 0) return;
@@ -1082,7 +1091,7 @@ void Spark::trace_VP(cand_pos_t i, cand_pos_t j, energy_t e) {
     if (tree->tree[i].parent->index > 0 && tree->tree[j].parent->index < tree->tree[i].parent->index && Bp_ij >= 0 && B_ij >= 0 && bp_ij < 0) {
         recompute_WI(i + 1, Bp_ij - 1);
         recompute_WI(B_ij + 1, j - 1);
-        if (e == WI_[Bp_ij - 1] + WI_[j - 1]) {
+        if(e == get_WI(i+1,Bp_ij-1) + get_WI(B_ij+1,j-1)) {
             trace_WI(i + 1, Bp_ij - 1, WI_[Bp_ij - 1]);
             trace_WI(B_ij + 1, j - 1, WI_[j - 1]);
             return;
@@ -1091,7 +1100,7 @@ void Spark::trace_VP(cand_pos_t i, cand_pos_t j, energy_t e) {
     if (tree->tree[i].parent->index < tree->tree[j].parent->index && tree->tree[j].parent->index > 0 && b_ij >= 0 && bp_ij >= 0 && Bp_ij < 0) {
         recompute_WI(i + 1, b_ij - 1);
         recompute_WI(bp_ij + 1, j - 1);
-        if (e == (WI_[b_ij - 1] + WI_[j - 1])) {
+        if (e == (get_WI(i+1,b_ij-1) + get_WI(bp_ij+1,j-1))) {
             trace_WI(i + 1, b_ij - 1, WI_[b_ij - 1]);
             trace_WI(bp_ij + 1, j - 1, WI_[j - 1]);
             return;
@@ -1102,7 +1111,7 @@ void Spark::trace_VP(cand_pos_t i, cand_pos_t j, energy_t e) {
         recompute_WI(B_ij + 1, b_ij - 1);
         recompute_WI(bp_ij + 1, j - 1);
 
-        if (e == WI_[Bp_ij - 1] + WI_[b_ij - 1] + WI_[j - 1]) {
+        if (e == get_WI(i+1,Bp_ij-1) + get_WI(B_ij+1,b_ij-1) + get_WI(bp_ij+1,j-1)) {
             trace_WI(i + 1, Bp_ij - 1, WI_[Bp_ij + 1]);
             trace_WI(B_ij + 1, b_ij - 1, WI_[b_ij - 1]);
             trace_WI(bp_ij + 1, j - 1, WI_[j - 1]);
@@ -1112,8 +1121,8 @@ void Spark::trace_VP(cand_pos_t i, cand_pos_t j, energy_t e) {
     if (exists_trace_arrow_from(taVP_, i, j)) {
 
         const TraceArrow &arrow = trace_arrow_from(taVP_, i, j);
-        const size_t k = arrow.k(i);
-        const size_t l = arrow.l(j);
+        const cand_pos_t k = arrow.k(i);
+        const cand_pos_t l = arrow.l(j);
         assert(i < k);
         assert(l < j);
         trace_VP(k, l, arrow.target_energy());

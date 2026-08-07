@@ -3,7 +3,6 @@
 
 #include "base_types.hh"
 #include "simple_map.hh"
-#define NDEBUG
 #include <cassert>
 
 /**

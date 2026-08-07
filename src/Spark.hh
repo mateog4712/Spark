@@ -50,7 +50,10 @@ class Spark {
     energy_t fold();
     const std::string& trace_back();
 
-
+    inline energy_t get_WI(cand_pos_t i, cand_pos_t j){
+        if(j<i) return 0;
+        return WI_[j];
+    }
   private:
     std::string seq_;
     cand_pos_t n_;
@@ -174,13 +177,12 @@ class Spark {
 
     /**
      * @brief Register a candidate
+     * Removed assert as I flip the indices for CLBEO and it would cause it to autofail
      */
     inline void register_candidate(std::vector<cand_list_td1> &CL, cand_pos_t const &i, cand_pos_t const &j, energy_t const &e, energy_t const &wmij, energy_t const &wij) {
-        assert(i <= j + TURN + 1);
         CL[j].emplace_back(cand_entry_td1(i, e, wmij, wij));
     }
     inline void register_candidate(std::vector<cand_list_t> &CL, cand_pos_t const &i, cand_pos_t const &j, energy_t const &e) {
-        assert(i <= j + TURN + 1);
         CL[j].emplace_back(cand_entry_t(i, e));
     }
  

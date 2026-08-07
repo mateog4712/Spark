@@ -148,7 +148,6 @@ int main(int argc, char **argv) {
     int dangle_model = args_info.dangles_arg;
     if(dangle_model < 0 || dangle_model > 2){
         vrna_message_warning("Invalid dangle model: %d. Defaulting to dangle model 2",dangle_model);
-        // std::cerr << "Invalid dangle model: " << dangle_model << ". Defaulting to dangle model 2" << std::endl;
         dangle_model = 2;
     }
 

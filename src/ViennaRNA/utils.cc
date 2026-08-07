@@ -98,12 +98,11 @@ vrna_log(vrna_log_levels_e  level,
          const char         *format_string,
          ...)
 {
-  vrna_log_event_t event = {
-    .format_string  = format_string,
-    .level          = level,
-    .line_number    = line_number,
-    .file_name      = file_name
-  };
+  vrna_log_event_t event{};
+  event.format_string = format_string;
+  event.level         = level;
+  event.line_number   = line_number;
+  event.file_name     = file_name;
 
   va_start(event.params, format_string);
   log_v(&event);
