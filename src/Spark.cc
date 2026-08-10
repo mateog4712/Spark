@@ -1073,7 +1073,7 @@ void Spark::trace_WMB(cand_pos_t i, cand_pos_t j, energy_t e) {
 void Spark::trace_VP(cand_pos_t i, cand_pos_t j, energy_t e) {
     if (debug) printf("VP at %d and %d with %d\n", i, j, e);
     
-    if (i < 0 || j < 0 || i >= n_ || j >= n_) {
+    if (i <= 0 || j <= 0 || i > n_ || j > n_) {
         vrna_message_warning("Error: i or j out of bounds in trace_VP: i=%d, j=%d, n=%d\n", i, j, n_);
         return;
     }
