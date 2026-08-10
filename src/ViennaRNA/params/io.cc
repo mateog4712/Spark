@@ -110,11 +110,11 @@ int vrna_params_load(const char fname[], [[maybe_unused]] unsigned int options) 
     return ret;
 }
 int vrna_params_load_RNA_Turner2004(void){
-  return vrna_params_load_from_string("params/dna_Matthews04.par", "RNA - Turner 2004", 0);
+  return vrna_params_load_from_string("params/rna_Turner04.par", "RNA - Turner 2004", 0);
 }
 
 int vrna_params_load_DNA_Mathews2004(void){
-    return vrna_params_load_from_string("params/rna_Turner04.par", "DNA - Mathews 2004", 0);
+    return vrna_params_load_from_string("params/dna_Matthews04.par", "DNA - Mathews 2004", 0);
 }
 
 /*
