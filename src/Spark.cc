@@ -210,8 +210,8 @@ energy_t Spark::E_MbLoop(const std::vector<energy_t> &dmli1, const std::vector<e
     base_type si1 = S_[i+1];
     base_type sj1 = S_[j-1];
 
-	auto consider = [&](energy_t v, bool check, base_type s5, base_type s3, int ml_count) {
-        if (check && v == INF) return;
+	auto consider = [&](energy_t v, bool valid, base_type s5, base_type s3, int ml_count) {
+        if (!valid || v == INF) return;
         e = std::min(e, v + E_MLstem(tt, s5, s3, params_) + params_->MLclosing + ml_count * params_->MLbase);
     };
 
