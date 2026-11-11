@@ -82,33 +82,34 @@ Spark::~Spark() {
 }
 
 void Spark::print_candidates(){
-    std::cout << "Can num:\t" << num_of_candidates(CL_);
-    std::cout << ", Can cap:\t" << capacity_of_candidates(CL_) << std::endl;
+    std::cout << "-----------------------------Cand----------------------------------" << std::endl;
+    std::cout << "PKfree" << std::endl;
+    std::cout << "V Can num: " << num_of_candidates(CL_) << "\t";
+    std::cout << "V Can cap: " << capacity_of_candidates(CL_) << std::endl;
 
-    std::cout << "\nPsuedoknotted\n" << std::endl;
-    std::cout << std::endl;
-    std::cout << "WMB Can num:\t" << num_of_candidates(CLWMB_);
-    std::cout << ", WMB Can cap:\t" << capacity_of_candidates(CLWMB_) << std::endl;
-    std::cout << "VP Can num:\t" << num_of_candidates(CLVP_);
-    std::cout << ", VP Can cap:\t" << capacity_of_candidates(CLVP_) << std::endl;
-    std::cout << "BE Can num:\t" << num_of_candidates(CLBE_);
-    std::cout << ", BE Can cap:\t" << capacity_of_candidates(CLBE_) << std::endl;
+    std::cout << "\nPsuedoknotted" << std::endl;
+    std::cout << "WMB Can num: " << num_of_candidates(CLWMB_) << "\t";
+    std::cout << "WMB Can cap: " << capacity_of_candidates(CLWMB_) << "\t";
+    std::cout << "VP Can num: " << num_of_candidates(CLVP_) << "\t";
+    std::cout << "VP Can cap: " << capacity_of_candidates(CLVP_) << std::endl;
+    std::cout << "BE Can num: " << num_of_candidates(CLBE_) << "\t";
+    std::cout << "BE Can cap: " << capacity_of_candidates(CLBE_) << std::endl;
+    std::cout << "-------------------------------------------------------------------" << std::endl;
 }
 
 void Spark::print_trace_arrows(){
-    std::cout << "PKfree: ";
-    std::cout << "TA cnt:\t" << sizeT(ta_);
-    std::cout << ", TA max:\t" << maxT(ta_);
-    std::cout << ", TA av:\t" << avoidedT(ta_);
-    std::cout << ", TA rm:\t" << erasedT(ta_) << std::endl;
+    std::cout << "-----------------------------TA------------------------------------" << std::endl;
+    std::cout << "PKfree: \n";
+    std::cout << "TA count: " << sizeT(ta_) << "    ";
+    std::cout << "TA capacity: " << capacityT(ta_)<< "    ";
+    std::cout << "TA avoided: " << avoidedT(ta_) << "    ";
+    std::cout << "TA removed: " << erasedT(ta_)  << "\n" << std::endl;
     std::cout << "PK: " << std::endl;
-    std::cout << "TAs num:\t" << sizeT(taVP_);
-    std::cout << ", TAs cap:\t" << capacityT(taVP_);
-    std::cout << ", TA av:\t" << avoidedT(taVP_);
-    std::cout << ", TA rm:\t" << erasedT(taVP_) << std::endl;
-
-    // std::cout << "TAs num:\t" << sizeT(spark.ta_) << std::endl;
-    //     std::cout << "TAs cap:\t" << capacityT(spark.ta_) << std::endl;
+    std::cout << "TA count: " << sizeT(taVP_) << "    ";
+    std::cout << "TA capacity: " << capacityT(taVP_) << "    ";
+    std::cout << "TA avoided: " << avoidedT(taVP_) << "    ";
+    std::cout << "TA removed: " << erasedT(taVP_) << std::endl;
+    std::cout << "-------------------------------------------------------------------" << std::endl;
 }
 
 /**
@@ -1339,7 +1340,7 @@ void Spark::trace_WI(cand_pos_t i, cand_pos_t j, energy_t e) {
 
     for (auto it = CLWMB_[j].begin(); CLWMB_[j].end() != it && it->first >= i; ++it) {
         cand_pos_t k = it->first;
-        if (e == WI_[k - 1] + it->second + PPS_penalty + PSM_penalty) {
+        if (e == WI_[k - 1] + it->second + PPS_penalty + PSP_penalty) {
             trace_WI(i, k - 1, WI_[k - 1]);
             trace_WMB(k, j, it->second);
             return;
@@ -1908,8 +1909,6 @@ energy_t Spark::compute_VP_internal(cand_pos_t i, cand_pos_t j, cand_pos_t b_ij,
  * @param bp_ij left inner boundary
  * @param BP_ij right inner boundary
  * @param B_ij right outer boundary
- * @param spark datastructure
- * @param tree tree for boundary determination
  */
 energy_t Spark::compute_VP(cand_pos_t i, cand_pos_t j, cand_pos_t b_ij, cand_pos_t bp_ij, cand_pos_t Bp_ij, cand_pos_t B_ij) {
     energy_t m1 = INF, m2 = INF, m3 = INF, m4 = INF, m5 = INF, m6 = INF, vp = INF;
@@ -2024,13 +2023,11 @@ energy_t Spark::fold(){
                 WI_[j] = (j - i + 1) * PUP_penalty;
             }
         }
-
         for (cand_pos_t j = i + TURN + 1; j <= n_; j++) {
 
             bool evaluate = tree->weakly_closed(i, j);
             // ------------------------------
             // W: split case
-            bool pairedkj = 0;
             energy_t w_split = INF;
             energy_t wm_split = INF;
             energy_t wm2_split = INF;
@@ -2062,9 +2059,6 @@ energy_t Spark::fold(){
             if (tree->weakly_closed(i, j)) {
                 for (auto it = CLWMB_[j].begin(); CLWMB_[j].end() != it; ++it) {
 
-                    if (pairedkj) break; // Not needed I believe as there shouldn't be any candidates there if paired anyways
-                    // Maybe this would just avoid this loop however
-
                     cand_pos_t k = it->first;
                     bool can_pair = tree->up[k - 1] >= (k - i);
 
@@ -2078,7 +2072,7 @@ energy_t Spark::fold(){
                     wm2_split = std::min(wm2_split, WM_[k - 1] + wmb_kj);
                     if (can_pair) wm2_split = std::min(wm2_split, static_cast<energy_t>((k - i) * params_->MLbase) + wmb_kj);
                     // For WI
-                    wmb_kj = it->second + PSM_penalty + PPS_penalty;
+                    wmb_kj = it->second + PSP_penalty + PPS_penalty;
                     wi_split = std::min(wi_split, WI_[k - 1] + wmb_kj);
 
                     // For WIP
@@ -2234,7 +2228,7 @@ energy_t Spark::fold(){
                     wi_v = V_(i_mod, j) + PPS_penalty;
                     wip_v = V_(i_mod, j) + bp_penalty;
 
-                    wi_wmb = WMB_[j] + PSM_penalty + PPS_penalty;
+                    wi_wmb = WMB_[j] + PSP_penalty + PPS_penalty;
                     wip_wmb = WMB_[j] + PSM_penalty + bp_penalty;
 
                     WI_[j] = std::min({wi_v, wi_wmb, wi_split});
@@ -2380,6 +2374,13 @@ energy_t Spark::fold(){
             }
         }
         for (auto &x : CLBE_) {
+            if (x.capacity() > 1.5 * x.size()) {
+                cand_list_t vec(x.size());
+                copy(x.begin(), x.end(), vec.begin());
+                vec.swap(x);
+            }
+        }
+        for (auto &x : CLBEO_) {
             if (x.capacity() > 1.5 * x.size()) {
                 cand_list_t vec(x.size());
                 copy(x.begin(), x.end(), vec.begin());
